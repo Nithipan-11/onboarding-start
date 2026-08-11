@@ -1,7 +1,7 @@
 # Tiny Tapeout project information
 project:
   title:        "8-bit Up/Down Counter"
-  author:       "Nithipan"
+  author:       "Nithipan Sivakanthan"
   discord:      ""
   description:  "A simple 8-bit counter that counts up or down based on input control"
   language:     "Verilog"
