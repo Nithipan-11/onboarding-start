@@ -61,7 +61,7 @@ async def test_counter_down(dut):
 
     # Now switch to count down (ui_in[0]=1, ui_in[1]=1)
     dut.ui_in.value = 0b00000011
-    await ClockCycles(dut.clk, 1)
+    await ClockCycles(dut.clk, 2)
 
     for expected in [4, 3, 2, 1, 0]:
         await ClockCycles(dut.clk, 1)
