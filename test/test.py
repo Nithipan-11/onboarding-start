@@ -51,12 +51,15 @@ async def test_counter_down(dut):
     dut.rst_n.value = 1
     await ClockCycles(dut.clk, 5)
 
-    # Count up a few times first so we have something to count down from
+    # Count up first, same pattern as test_counter_up
     dut.ui_in.value = 0b00000001
-    await ClockCycles(dut.clk, 5)
-    assert dut.uo_out.value == 5, f"Expected 5, got {dut.uo_out.value}"
+    await ClockCycles(dut.clk, 1)
 
-    # Switch to count down (ui_in[0]=1, ui_in[1]=1)
+    for expected in range(1, 6):
+        await ClockCycles(dut.clk, 1)
+        assert dut.uo_out.value == expected, f"Expected {expected}, got {dut.uo_out.value}"
+
+    # Now switch to count down (ui_in[0]=1, ui_in[1]=1)
     dut.ui_in.value = 0b00000011
     await ClockCycles(dut.clk, 1)
 
