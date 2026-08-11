@@ -1,9 +1,9 @@
 # Tiny Tapeout project information
 project:
-  title:        "8-bit Up/Down Counter"
+  title:        "SPI-Controlled PWM Periphera"
   author:       "Nithipan Sivakanthan"
   discord:      ""
-  description:  "A simple 8-bit counter that counts up or down based on input control"
+  description:  "SPI peripheral controlling output enables and PWM on 16 output pins"
   language:     "Verilog"
   clock_hz:     0
 
@@ -13,6 +13,7 @@ project:
 
   source_files:
     - "project.v"
+    - "pwm_peripheral.v"
 
 pinout:
   pinout:
