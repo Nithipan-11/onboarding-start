@@ -1,6 +1,6 @@
 # Tiny Tapeout project information
 project:
-  title:        "SPI-Controlled PWM Periphera"
+  title:        "SPI-Controlled PWM Peripheral"
   author:       "Nithipan Sivakanthan"
   discord:      ""
   description:  "SPI peripheral controlling output enables and PWM on 16 output pins"
@@ -16,7 +16,6 @@ project:
     - "pwm_peripheral.v"
 
 pinout:
-  pinout:
   # Inputs
   ui[0]: "SCLK"
   ui[1]: "COPI"
