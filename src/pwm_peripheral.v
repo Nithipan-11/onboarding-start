@@ -7,7 +7,7 @@ module pwm_peripheral (
     output reg        pwm_out
 );
 
-    // 256 * 13 = 3328 -> 10MHz / 3328 ≈ 3004.8 Hz (within ±1% of 3kHz)
+    // 256 * 13 = 3328 -> 10MHz / 3328 ??? 3004.8 Hz (within ?+/-1% of 3kHz)
     localparam PWM_PERIOD = 3328;
 
     reg [11:0] counter;
