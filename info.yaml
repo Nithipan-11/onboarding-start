@@ -13,7 +13,7 @@ project:
 
   source_files:
     - "project.v"
-    - "pwm_peripheral.v"
+    - "pwm_peripheral.v"    - "spi_peripheral.v"
 
 pinout:
   # Inputs
