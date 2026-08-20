@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: © 2024 Tiny Tapeout
+# SPDX-FileCopyrightText: (c) 2024 Tiny Tapeout
 # SPDX-License-Identifier: Apache-2.0
 
 import cocotb
@@ -139,12 +139,10 @@ async def test_pwm_freq(dut):
     dut.rst_n.value = 1
     await ClockCycles(dut.clk, 5)
 
-    # Enable output + PWM mode on uo_out[0], set 50% duty cycle
-    await send_spi_transaction(dut, 1, 0x00, 0x01)  # enable uo_out[0]
-    await send_spi_transaction(dut, 1, 0x02, 0x01)  # PWM mode on uo_out[0]
-    await send_spi_transaction(dut, 1, 0x04, 0x80)  # 50% duty
+    await send_spi_transaction(dut, 1, 0x00, 0x01)
+    await send_spi_transaction(dut, 1, 0x02, 0x01)
+    await send_spi_transaction(dut, 1, 0x04, 0x80)
 
-    # Measure period by finding two consecutive rising edges
     prev = int(dut.uo_out.value) & 1
     edge_times = []
     timeout = 0
@@ -161,6 +159,7 @@ async def test_pwm_freq(dut):
     freq_hz = 1e9 / period_ns
     dut._log.info(f"Measured PWM frequency: {freq_hz:.1f} Hz")
     assert 2970 <= freq_hz <= 3030, f"Expected 2970-3030 Hz, got {freq_hz:.1f} Hz"
+
     dut._log.info("PWM Frequency test completed successfully")
 
 
@@ -178,22 +177,58 @@ async def test_pwm_duty(dut):
     dut.rst_n.value = 1
     await ClockCycles(dut.clk, 5)
 
-    await send_spi_transaction(dut, 1, 0x00, 0x01)  # enable uo_out[0]
-    await send_spi_transaction(dut, 1, 0x02, 0x01)  # PWM mode on uo_out[0]
+    await send_spi_transaction(dut, 1, 0x00, 0x01)
+    await send_spi_transaction(dut, 1, 0x02, 0x01)
 
     for duty in [0x00, 0x40, 0x80, 0xC0, 0xFF]:
         await send_spi_transaction(dut, 1, 0x04, duty)
-        await ClockCycles(dut.clk, 3334 * 2)  # let it settle over ~2 periods
+        await ClockCycles(dut.clk, 3334 * 2)
 
-        high_cycles = 0
-        total_cycles = 3334
-        for _ in range(total_cycles):
-            await ClockCycles(dut.clk, 1)
-            if int(dut.uo_out.value) & 1:
-                high_cycles += 1
-
-        measured_duty = high_cycles / total_cycles
         expected_duty = duty / 256
+
+        if duty == 0x00:
+            await ClockCycles(dut.clk, 3334)
+            assert int(dut.uo_out.value) & 1 == 0, "Expected output low for 0x00 duty"
+            dut._log.info(f"Duty {duty:#04x}: confirmed always low")
+            continue
+
+        if duty == 0xFF:
+            await ClockCycles(dut.clk, 3334)
+            assert int(dut.uo_out.value) & 1 == 1, "Expected output high for 0xFF duty"
+            dut._log.info(f"Duty {duty:#04x}: confirmed always high")
+            continue
+
+        prev = int(dut.uo_out.value) & 1
+        while True:
+            await ClockCycles(dut.clk, 1)
+            cur = int(dut.uo_out.value) & 1
+            if prev == 0 and cur == 1:
+                rising_time = cocotb.utils.get_sim_time(units="ns")
+                break
+            prev = cur
+
+        prev = cur
+        while True:
+            await ClockCycles(dut.clk, 1)
+            cur = int(dut.uo_out.value) & 1
+            if prev == 1 and cur == 0:
+                falling_time = cocotb.utils.get_sim_time(units="ns")
+                break
+            prev = cur
+
+        prev = cur
+        while True:
+            await ClockCycles(dut.clk, 1)
+            cur = int(dut.uo_out.value) & 1
+            if prev == 0 and cur == 1:
+                next_rising_time = cocotb.utils.get_sim_time(units="ns")
+                break
+            prev = cur
+
+        high_time = falling_time - rising_time
+        period = next_rising_time - rising_time
+        measured_duty = high_time / period
+
         dut._log.info(
             f"Duty {duty:#04x}: expected {expected_duty*100:.1f}%, "
             f"measured {measured_duty*100:.1f}%"
