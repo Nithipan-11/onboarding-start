@@ -7,11 +7,11 @@ module pwm_peripheral (
     output reg        pwm_out
 );
 
-    // 10 MHz clk / 3 kHz target ≈ 3334 cycles per PWM period
-    localparam PWM_PERIOD = 3334;
+    // 256 * 13 = 3328 -> 10MHz / 3328 ≈ 3004.8 Hz (within ±1% of 3kHz)
+    localparam PWM_PERIOD = 3328;
 
     reg [11:0] counter;
-    reg [11:0] threshold;
+    wire [11:0] threshold = pwm_duty_cycle * 13; // cheap constant multiply, no full multiplier
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n)
@@ -20,10 +20,6 @@ module pwm_peripheral (
             counter <= 12'd0;
         else
             counter <= counter + 1;
-    end
-
-    always @(*) begin
-        threshold = (pwm_duty_cycle * PWM_PERIOD) >> 8;
     end
 
     always @(posedge clk or negedge rst_n) begin
