@@ -187,14 +187,16 @@ async def test_pwm_duty(dut):
         expected_duty = duty / 256
 
         if duty == 0x00:
-            await ClockCycles(dut.clk, 3334)
-            assert int(dut.uo_out.value) & 1 == 0, "Expected output low for 0x00 duty"
+            for _ in range(3334):
+                await ClockCycles(dut.clk, 1)
+                assert int(dut.uo_out.value) & 1 == 0, "Expected output to stay low for 0x00 duty"
             dut._log.info(f"Duty {duty:#04x}: confirmed always low")
             continue
 
         if duty == 0xFF:
-            await ClockCycles(dut.clk, 3334)
-            assert int(dut.uo_out.value) & 1 == 1, "Expected output high for 0xFF duty"
+            for _ in range(3334):
+                await ClockCycles(dut.clk, 1)
+                assert int(dut.uo_out.value) & 1 == 1, "Expected output to stay high for 0xFF duty"
             dut._log.info(f"Duty {duty:#04x}: confirmed always high")
             continue
 
